@@ -96,8 +96,6 @@ class GameState:
                   if player_win_counts[player] != player_win_counts[max_count_player]]
         # Deactivate losers
         new_state = self.deactivated_players(players=losers)
-        # Reset choices
-        new_state = new_state.reset_choices()
         # If there is a single winner, go to next round
         if len(new_state.get_active_players()) == 1:
             winners = deepcopy(new_state.past_winners)
@@ -139,3 +137,12 @@ class GameState:
 
     def updated(self, attr: str, val: Any) -> GameState:
         return GameState(**{**self.__dict__, attr: val})
+
+    def __str__(self) -> str:
+        desc = f'Rounds: {self.current_round}/{self.config.rounds}\n'
+        desc += f'Past winners: {", ".join([player.name for player in self.past_winners])}\n' \
+            if self.past_winners else ''
+        desc += f'Player choices:\n'
+        for player, player_state in self.player_states.items():
+            desc += f'\t{player.name} - {player_state.choice}\n'
+        return desc
