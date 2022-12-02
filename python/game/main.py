@@ -32,16 +32,19 @@ if __name__ == '__main__':
     game_config = GameConfig.load(path=config_path)
     # Get initial game state
     game_state = GameState.get_initial_state(config=game_config)
-    history.append(game_state)
     # Run game
     while not game_state.is_finished():
+        game_state = game_state.reset_choices()
         player_choices = {player: choose_shape(player=player, config=game_config)
-                          for player in game_state.get_active_players()}
+                          for player in game_state.get_unready_players()}
         game_state = game_state.updated_player_choices(player_choices=player_choices)
         game_state = game_state.get_next_state()
         history.append(game_state)
-        game_state = game_state.reset_choices()
+        if game_state.is_end_of_round():
+            round_winner = game_state.get_round_winner()
+            game_state = game_state.get_next_round()
+            print(f'\n{round_winner.name} wins this round!')
     # Display winner
     winner = game_state.get_winner()
-    print(f'{winner.name} wins!')
+    print(f'\n{winner.name} wins!')
     print_history(history)

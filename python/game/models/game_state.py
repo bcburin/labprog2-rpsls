@@ -39,6 +39,9 @@ class GameState:
     def get_active_players(self):
         return [player for player, player_state in self.player_states.items() if player_state.active]
 
+    def get_unready_players(self):
+        return [player for player in self.get_active_players() if self.player_states[player].choice is None]
+
     def confront_two_players(self, player1, player2) -> int:
         player1_choice = self.get_player_choice(player=player1)
         player2_choice = self.get_player_choice(player=player2)
@@ -84,9 +87,11 @@ class GameState:
             return None
         return self.get_active_players()[0]
 
-    def get_next_state(self) -> GameState | None:
+    def get_next_state(self) -> GameState:
+        if self.is_end_of_round():
+            return self.get_next_round()
         if not self.is_ready_for_confrontation():
-            return None
+            return self
         # Get win count for each player
         player_win_counts = self.confront_all_players()
         # Get the highest win count
@@ -96,14 +101,16 @@ class GameState:
                   if player_win_counts[player] != player_win_counts[max_count_player]]
         # Deactivate losers
         new_state = self.deactivated_players(players=losers)
-        # If there is a single winner, go to next round
-        if len(new_state.get_active_players()) == 1:
-            winners = deepcopy(new_state.past_winners)
-            winners.append(new_state.get_active_players()[0])
-            return GameState.get_initial_state(
-                config=new_state.config, current_round=new_state.current_round+1, past_winners=winners)
         # Return next state
         return new_state
+
+    def get_next_round(self) -> GameState:
+        if not self.is_end_of_round():
+            return self
+        winners = deepcopy(self.past_winners)
+        winners.append(self.get_active_players()[0])
+        return GameState.get_initial_state(
+            config=self.config, current_round=self.current_round + 1, past_winners=winners)
 
     def updated_player_choice(self, player: Player, choice: Shape):
         player_state = self.player_states[player].updated_choice(new_choice=choice)
@@ -139,7 +146,7 @@ class GameState:
         return GameState(**{**self.__dict__, attr: val})
 
     def __str__(self) -> str:
-        desc = f'Rounds: {self.current_round}/{self.config.rounds}\n'
+        desc = f'Rounds: {self.current_round + 1}/{self.config.rounds}\n'
         desc += f'Past winners: {", ".join([player.name for player in self.past_winners])}\n' \
             if self.past_winners else ''
         desc += f'Player choices:\n'
