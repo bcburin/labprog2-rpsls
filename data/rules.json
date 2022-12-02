@@ -1,0 +1,1 @@
+{"Rock": ["Scissors", "Lizard"], "Paper": ["Rock", "Spock"], "Scissors": ["Paper", "Lizard"], "Lizard": ["Spock", "Paper"], "Spock": ["Rock", "Scissors"]}
