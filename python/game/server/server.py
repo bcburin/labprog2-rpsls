@@ -94,10 +94,11 @@ class GameServer:
         # Send responses
         player_conn1.conn.send(response1.json().encode(self.FORMAT))
         player_conn2.conn.send(response2.json().encode(self.FORMAT))
-        # Map player objects to connections
-        players_map = {self.game_config.players[0]: player_conn1, self.game_config.players[1]: player_conn2}
         # Get initial game state
-        game_state = GameState.get_initial_state(config=self.game_config)
+        game_state = GameState.get_initial_state(
+            config=self.game_config, player_names=[player_conn1.player_name, player_conn2.player_name])
+        # Map player objects to connections
+        players_map = {game_state.players[0]: player_conn1, game_state.players[1]: player_conn2}
         # Run game
         math_number = 1
         while not game_state.is_finished():

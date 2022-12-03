@@ -10,7 +10,7 @@ from game.models.shape import Shape
 
 @dataclass(frozen=True)
 class GameConfig:
-    players: list[Player]
+    num_players: int
     rules: dict[Shape, set[Shape]]
     rounds: int
 
@@ -24,14 +24,14 @@ class GameConfig:
     def load(cls, path) -> GameConfig:
         with open(path) as config_file:
             config_dict = load(config_file)
-            players = [Player(name=player_name) for player_name in config_dict['players']]
+            num_players = config_dict['numplayers']
             rules = {
                 Shape(name=shape_name):
                     set([Shape(name=other_shape_name) for other_shape_name in other_shapes])
                 for shape_name, other_shapes in config_dict['rules'].items()
             }
             rounds = config_dict['rounds']
-        return cls(players=players, rules=rules, rounds=rounds)
+        return cls(num_players=num_players, rules=rules, rounds=rounds)
 
 
 if __name__ == '__main__':

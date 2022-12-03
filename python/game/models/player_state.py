@@ -9,7 +9,6 @@ from game.models.shape import Shape
 
 @dataclass(frozen=True)
 class PlayerState:
-    player: Player
     choice: Shape | None = None
     active: bool = True
 

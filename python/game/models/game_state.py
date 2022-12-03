@@ -22,9 +22,23 @@ class GameState:
         return list(self.player_states.keys())
 
     @staticmethod
-    def get_initial_state(config: GameConfig, current_round: int = 0, past_winners: list[Player] | None = None
-                          ) -> GameState:
-        player_states = {player: PlayerState(player=player) for player in config.players}
+    def get_initial_state(
+            config: GameConfig,
+            player_names: list[str] | None = None,
+            current_round: int = 0,
+            past_winners: list[Player] | None = None
+    ) -> GameState:
+        # Assert correct number of players
+        if player_names and len(player_names) != config.num_players:
+            raise ValueError(f'Invalid number of players: there must be exactly {config.num_players} players.')
+        # Generate default names
+        if player_names is None:
+            player_names = []
+            for i in range(config.num_players):
+                player_names.append(f'Player{i+1}')
+        # Create player states
+        player_states = {Player(name=player_name): PlayerState() for player_name in player_names}
+        # Create initial game state
         return GameState(
             config=config,
             player_states=player_states,
@@ -110,7 +124,11 @@ class GameState:
         winners = deepcopy(self.past_winners)
         winners.append(self.get_active_players()[0])
         return GameState.get_initial_state(
-            config=self.config, current_round=self.current_round + 1, past_winners=winners)
+            config=self.config,
+            player_names=[player.name for player in self.players],
+            current_round=self.current_round + 1,
+            past_winners=winners
+        )
 
     def updated_player_choice(self, player: Player, choice: Shape):
         player_state = self.player_states[player].updated_choice(new_choice=choice)

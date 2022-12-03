@@ -1,5 +1,5 @@
 {
-  "players": ["Player1", "Player2"],
+  "numplayers": 2,
   "rules": {
     "Rock": ["Scissors", "Lizard"],
     "Paper": ["Rock", "Spock"],
