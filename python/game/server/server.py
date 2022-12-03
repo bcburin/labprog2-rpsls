@@ -9,7 +9,7 @@ from game.models.game_state import GameState
 from game.models.shape import Shape
 from game.server.models import PlayerConnection
 from game.server.schemas import JoinRequest, JoinResponse, \
-    PlayerChoiceRequest, PlayerChoiceResponse, PlayerChoiceInfo, EndOfGameRequest
+    PlayerChoiceRequest, PlayerChoiceResponse, PlayerChoiceInfo, EndOfGameMessage
 
 
 class GameServer:
@@ -100,23 +100,23 @@ class GameServer:
         # Map player objects to connections
         players_map = {game_state.players[0]: player_conn1, game_state.players[1]: player_conn2}
         # Run game
-        math_number = 1
+        match_number = 1
         while not game_state.is_finished():
             # game_state = game_state.reset_choices()
             player_choices = {
                 player: self.request_player_choice(
-                    player_conn=player_conn, game_id=game_id, match_number=math_number, game_state=game_state)
+                    player_conn=player_conn, game_id=game_id, match_number=match_number, game_state=game_state)
                 for player, player_conn in players_map.items()
             }
             game_state = game_state.updated_player_choices(player_choices=player_choices)
             game_state = game_state.get_next_state()
             if game_state.is_end_of_round():
                 game_state = game_state.get_next_round()
-            math_number += 1
+            match_number += 1
         # Inform winner
         winner = players_map[game_state.get_winner()]
         print(f'[{game_id}] {winner.conn} a.k.a {winner.player_name} wins.')
-        end_request = EndOfGameRequest(
+        end_request = EndOfGameMessage(
             current_round=game_state.current_round,
             total_rounds=game_state.config.rounds,
             past_winners=[player.name for player in game_state.past_winners],
