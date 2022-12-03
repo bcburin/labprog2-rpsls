@@ -1,6 +1,5 @@
 from asyncio import Queue
-from pathlib import Path
-from socket import socket, gethostbyname, gethostname, AF_INET, SOCK_STREAM
+from socket import socket, AF_INET, SOCK_STREAM
 from threading import Thread, active_count
 from uuid import uuid1, UUID
 
@@ -18,6 +17,8 @@ class GameServer:
 
     def __init__(self, host: str, port: int, game_config: GameConfig):
         self.server = socket(AF_INET, SOCK_STREAM)
+        self.host = host
+        self.port = port
         self.server.bind((host, port))
         self.queue = Queue[PlayerConnection]()
         self.game_config = game_config
@@ -25,7 +26,7 @@ class GameServer:
 
     def start(self):
         self.server.listen()
-        print(f'[LISTENING] Server is listening on {HOST}.')
+        print(f'[LISTENING] Server is listening on {self.host}.')
         while True:
             # Handle server queue of waiting players
             queue_thread = Thread(target=self.handle_queue)
@@ -132,15 +133,3 @@ class GameServer:
         # Close connections
         player_conn1.conn.close()
         player_conn2.conn.close()
-
-
-if __name__ == '__main__':
-    PORT = 40_000
-    HOST = gethostbyname(gethostname())
-
-    # Get game configurations
-    config_path = Path.cwd().parent.parent.parent.joinpath('data').joinpath('gameconfig.json')
-    config = GameConfig.load(path=config_path)
-
-    server = GameServer(host=HOST, port=PORT, game_config=config)
-    server.start()

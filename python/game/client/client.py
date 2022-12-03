@@ -3,22 +3,20 @@ from socket import socket, AF_INET, SOCK_STREAM
 from game.client.util import request_user_input, parse_incoming_message
 from game.server.schemas import JoinRequest, JoinResponse, PlayerChoiceRequest, PlayerChoiceResponse, EndOfGameMessage
 
-PORT = 40_000
-HOST = '127.0.1.1'
-
 
 class GameClient:
     FORMAT = 'utf-8'
 
-    def __init__(self):
+    def __init__(self, player_name: str, is_bot: bool = False):
         self.client = socket(AF_INET, SOCK_STREAM)
+        self.player_name = player_name
+        self.is_bot = is_bot
 
-    def request_connection(self):
-        self.client.connect((HOST, PORT))
-
-    def request_join_game(self, player_name: str):
+    def request_join_game(self, server_host: str, server_port: int):
+        # Connect to server
+        self.client.connect((server_host, server_port))
         # Send join request
-        request = JoinRequest(player_name=player_name)
+        request = JoinRequest(player_name=self.player_name)
         self.client.send(request.json().encode(self.FORMAT))
         # Receive response
         response_raw = self.client.recv(1024).decode(self.FORMAT)
@@ -48,12 +46,3 @@ class GameClient:
                     shape=chosen_shape
                 )
                 self.client.send(response.json().encode(self.FORMAT))
-
-
-if __name__ == '__main__':
-    client = GameClient()
-
-    name = input('Name: ')
-
-    client.request_connection()
-    client.request_join_game(player_name=name)
