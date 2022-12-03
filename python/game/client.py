@@ -9,7 +9,6 @@ HOST = '127.0.1.1'
 
 
 class GameClient:
-
     FORMAT = 'utf-8'
 
     def __init__(self):
@@ -39,16 +38,13 @@ class GameClient:
                 break
             # Choose
             print(f'[REQUEST] {request}')
-            options = {i+1: shape for i, shape in enumerate(request.options)}
-            for i, shape in options.items():
-                print(f'[{i}] {shape}')
-            chosen_shape = int(input('[CHOICE] '))
+            chosen_shape = self.request_user_input(request=request)
             # Send Response
             response = PlayerChoiceResponse(
                 player_name=request.player_name,
                 game_id=request.game_id,
                 match_number=request.match_number,
-                shape=options[chosen_shape]
+                shape=chosen_shape
             )
             self.client.send(response.json().encode(self.FORMAT))
 
@@ -59,6 +55,14 @@ class GameClient:
         except ValidationError:
             return EndOfGameRequest.parse_raw(request_raw)
 
+    @staticmethod
+    def request_user_input(request: PlayerChoiceRequest) -> str:
+        options = {i + 1: shape for i, shape in enumerate(request.options)}
+        for i, shape in options.items():
+            print(f'[{i}] {shape}')
+        choice = int(input('[CHOICE] '))
+        return options[choice]
+
 
 if __name__ == '__main__':
     client = GameClient()
@@ -67,4 +71,3 @@ if __name__ == '__main__':
 
     client.request_connection()
     client.request_join_game(player_name=name)
-
