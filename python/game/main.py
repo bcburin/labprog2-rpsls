@@ -1,4 +1,4 @@
-from _socket import gethostbyname, gethostname
+from socket import gethostbyname, gethostname
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -18,6 +18,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     # Server configuration options
     parser.add_argument('--server', action='store_true')
+    parser.add_argument('--verbose', action='store_true')
     parser.add_argument('--port')
     parser.add_argument('--host')
     # Client configuration options
@@ -37,7 +38,7 @@ if __name__ == '__main__':
         config_path = Path.cwd().parent.joinpath('data').joinpath('gameconfig.json')
         config = GameConfig.load(path=config_path)
         # Create server
-        server = GameServer(host=host, port=port, game_config=config)
+        server = GameServer(host=host, port=port, game_config=config, verbose=args.verbose)
         # Run server
         server.start()
     # Client
