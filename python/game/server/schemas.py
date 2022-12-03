@@ -39,6 +39,6 @@ class PlayerChoiceResponse(PlayerChoiceBase):
     shape: str
 
 
-class EndOfGameRequest(GameStateInfo):
+class EndOfGameMessage(GameStateInfo):
     winner: str
 
