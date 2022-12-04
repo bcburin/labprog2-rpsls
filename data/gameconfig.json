@@ -7,5 +7,5 @@
     "Lizard": ["Spock", "Paper"],
     "Spock": ["Rock", "Scissors"]
   },
-  "rounds": 3
+  "rounds": 15
 }
