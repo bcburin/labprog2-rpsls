@@ -1,5 +1,6 @@
 from socket import socket, AF_INET, SOCK_STREAM
 
+from game.client.bot import GameBot
 from game.client.util import request_user_input, parse_incoming_message
 from game.server.schemas import JoinRequest, JoinResponse, PlayerChoiceRequest, PlayerChoiceResponse, EndOfGameMessage
 
@@ -11,6 +12,7 @@ class GameClient:
         self.client = socket(AF_INET, SOCK_STREAM)
         self.player_name = player_name
         self.is_bot = is_bot
+        self.bot: GameBot | None = None
 
     def request_join_game(self, server_host: str, server_port: int):
         # Connect to server
@@ -21,7 +23,9 @@ class GameClient:
         # Receive response
         response_raw = self.client.recv(1024).decode(self.FORMAT)
         response = JoinResponse.parse_raw(response_raw)
-        print(response)
+        # Create bot
+        if self.is_bot:
+            self.bot = GameBot(player_name=self.player_name, total_rounds=response.total_rounds)
         # Play game for successful join response
         self.play_game()
 
@@ -36,8 +40,13 @@ class GameClient:
                 break
             # Check for player choice request
             if isinstance(message, PlayerChoiceRequest):
-                print(f'[REQUEST] {message}')
-                chosen_shape = request_user_input(request=message)
+                chosen_shape = None
+                if self.is_bot:
+                    self.bot.add_request_content(request=message)
+                    chosen_shape = self.bot.decide()
+                else:
+                    print(f'[REQUEST] {message}')
+                    chosen_shape = request_user_input(request=message)
                 # Send Response
                 response = PlayerChoiceResponse(
                     player_name=message.player_name,
