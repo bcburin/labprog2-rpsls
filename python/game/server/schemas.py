@@ -11,6 +11,7 @@ class JoinResponse(BaseModel):
     player_name: str
     players: list[str]
     game_id: UUID
+    total_rounds: int
 
 
 class PlayerChoiceInfo(BaseModel):
@@ -41,4 +42,3 @@ class PlayerChoiceResponse(PlayerChoiceBase):
 
 class EndOfGameMessage(GameStateInfo):
     winner: str
-
