@@ -102,8 +102,14 @@ class GameServer:
         game_id = uuid1()
         logging.info(f'[{game_id}] New game created with {player_conn1} and {player_conn2})')
         # Generate responses
-        response1 = JoinResponse(player_name=player_conn1.player_name, players=players, game_id=game_id)
-        response2 = JoinResponse(player_name=player_conn2.player_name, players=players, game_id=game_id)
+        response1 = JoinResponse(
+            player_name=player_conn1.player_name,
+            players=players, game_id=game_id,
+            total_rounds=self.game_config.rounds)
+        response2 = JoinResponse(
+            player_name=player_conn2.player_name,
+            players=players, game_id=game_id,
+            total_rounds=self.game_config.rounds)
         # Send responses
         player_conn1.conn.send(response1.json().encode(self.FORMAT))
         player_conn2.conn.send(response2.json().encode(self.FORMAT))
@@ -118,7 +124,10 @@ class GameServer:
             # Request clients to each choose a shape
             player_choices = {
                 player: self.request_player_choice(
-                    player_conn=player_conn, game_id=game_id, match_number=match_number, game_state=game_state
+                    player_conn=player_conn,
+                    game_id=game_id,
+                    match_number=match_number,
+                    game_state=game_state
                 )
                 for player, player_conn in players_map.items()
             }
@@ -132,7 +141,7 @@ class GameServer:
             if game_state.is_end_of_round():
                 logging.info(f'[{game_id}] '
                              f'{players_map[game_state.get_round_winner()]} wins round {game_state.current_round+1}.')
-                game_state = game_state.get_next_round()
+                game_state = game_state.get_next_round().updated_player_choices(player_choices)
             else:
                 tied_players = (", ".join([
                     f"{players_map[player]} chose {game_state.player_states[player].choice.name}"
