@@ -8,7 +8,7 @@ import java.io.IOException;
 public class App
 {
     public static void main( String[] args ) throws IOException, ExecutionControl.NotImplementedException {
-        Client client = new Client("John", "127.0.1.1", 40000, true);
+        Client client = new Client(args[0], args[1], Integer.parseInt(args[2]), true);
         client.requestJoinGame();
     }
 
