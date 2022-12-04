@@ -3,6 +3,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from game.client.bot import GameBot
 from game.client.util import request_user_input, parse_incoming_message
 from game.server.schemas import JoinRequest, JoinResponse, PlayerChoiceRequest, PlayerChoiceResponse, EndOfGameMessage
+from game.utils.protocol import encode
 
 
 class GameClient:
@@ -19,7 +20,7 @@ class GameClient:
         self.client.connect((server_host, server_port))
         # Send join request
         request = JoinRequest(player_name=self.player_name)
-        self.client.send(request.json().encode(self.FORMAT))
+        self.client.send(encode(request))
         # Receive response
         response_raw = self.client.recv(1024).decode(self.FORMAT)
         response = JoinResponse.parse_raw(response_raw)
@@ -54,4 +55,4 @@ class GameClient:
                     match_number=message.match_number,
                     shape=chosen_shape
                 )
-                self.client.send(response.json().encode(self.FORMAT))
+                self.client.send(encode(response))

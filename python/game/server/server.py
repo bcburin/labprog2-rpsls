@@ -11,6 +11,7 @@ from game.server.models import PlayerConnection
 from game.server.schemas import JoinRequest, JoinResponse, \
     PlayerChoiceRequest, PlayerChoiceResponse, PlayerChoiceInfo, EndOfGameMessage
 from game.utils.logging import configure_logger
+from game.utils.protocol import encode
 
 
 class GameServer:
@@ -83,7 +84,7 @@ class GameServer:
                     player_name=player.name, shape=player_state.choice.name if player_state.choice else None
                 ) for player, player_state in game_state.player_states.items()]
         )
-        player_conn.conn.send(request.json().encode(self.FORMAT))
+        player_conn.conn.send(encode(request))
         # Receive client response
         response_raw = player_conn.conn.recv(1024).decode(self.FORMAT)
         response = PlayerChoiceResponse.parse_raw(response_raw)
@@ -111,8 +112,8 @@ class GameServer:
             players=players, game_id=game_id,
             total_rounds=self.game_config.rounds)
         # Send responses
-        player_conn1.conn.send(response1.json().encode(self.FORMAT))
-        player_conn2.conn.send(response2.json().encode(self.FORMAT))
+        player_conn1.conn.send(encode(response1))
+        player_conn2.conn.send(encode(response2))
         # Get initial game state
         game_state = GameState.get_initial_state(
             config=self.game_config, player_names=[player_conn1.player_name, player_conn2.player_name])
@@ -163,8 +164,8 @@ class GameServer:
                 ) for player, player_state in game_state.player_states.items()],
             winner=winner.player_name
         )
-        player_conn1.conn.send(end_request.json().encode(self.FORMAT))
-        player_conn2.conn.send(end_request.json().encode(self.FORMAT))
+        player_conn1.conn.send(encode(end_request))
+        player_conn2.conn.send(encode(end_request))
         # Close connections
         player_conn1.conn.close()
         player_conn2.conn.close()
